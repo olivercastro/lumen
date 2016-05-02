@@ -1,5 +1,8 @@
 @extends('layout.master')
 @section('body')
+    <div class="alert" role="alert" style="display:none" id="global-notification">
+
+    </div>
     <form action="<?php echo $postpath; ?>" method="post" id="frm-comment" data-captcha="http://dev.training.lumen.loc/generate">
         <div class="form-group">
             <label for="fn">First Name</label>
@@ -26,20 +29,45 @@
                     <span id="op2"><?php echo $data->op2; ?></span>
                 </span>
                 <input type="text" name="captcha" class="form-control"/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" id="captcha-gen">Generate!</button>
+                </span>
             </div>
         </div>
         <button type="submit" class="btn btn-default">Post</button>
     </form>
     <script type="text/javascript">
         $(document).ready(function(){
+
+            $("#captcha-gen").click(function(evt){
+                var path = $("#frm-comment").data("captcha");
+                $.ajax({
+                    'url': path,
+                    'method' : 'post',
+                    'success' : function(response){
+                        $("#op1").text(response.op1);
+                        $("#op2").text(response.op2);
+                        $("#opr").text(response.opr);
+                    }
+                })
+            });
+
             $("#frm-comment").submit(function(evt){
                 var elements = $("#frm-comment :input");
                 if(hasRequiredFields(elements) && checkEmail(elements)){
-                    console.log("submit");
+                    $.ajax({
+                        'url' : $("#frm-comment").attr('action'),
+                        'method': 'post',
+                        'data'  : $("#frm-comment").serialize(),
+                        'success': function(response){
+                            console.log(response);
+                        }
+                    })
+                    $("#global-notification").addClass('alert-success').text("Entry Added").show();
                 }else{
-                    console.log("Correct");
+                    $("#global-notification").addClass('alert-danger').text("Incorrect Captcha. Please try again.").show();
                 }
-                checkCaptCha($("#frm-comment").data("captcha"));
+                //checkCaptCha($("#frm-comment").data("captcha"));
                 evt.preventDefault();
                 function hasRequiredFields(els){
                     var flag =true;
@@ -72,19 +100,6 @@
                         }
                     }.bind(flag));
                     return flag;
-                }
-                function checkCaptCha(path){
-                    console.log(path);
-                    var captChaEl = $("#frm-comment :input[name='captcha']");
-                    $.ajax({
-                        'url': path,
-                        'method' : 'post',
-                        'data' : {ans: $(captChaEl).val()},
-                        'success' : function(response){
-                            alert("done");
-                        }
-                    })
-
                 }
             });
 

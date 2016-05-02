@@ -29,7 +29,6 @@ $app->post('/store',['as' => 'postpath',function() use($app){
                 'comment'   => $request->input('comment')
             ]
         );
-
         return response()->json(['message' => 'Ok', 'status' => '200']);
     }else{
         return response()->json(['message' => 'Incorrect captcha', 'status' => '500']);
@@ -37,9 +36,8 @@ $app->post('/store',['as' => 'postpath',function() use($app){
 }]);
 
 $app->post('/generate', function() use($app){
-
-
-    //return response()->json(['name' => 'Abigail', 'state' => 'CA']);
+    $_SESSION['captcha'] = generateCaptCha();
+    return response($_SESSION['captcha'])->header('Content-Type','application/json');
 });
 
 function generateCaptCha(){
